@@ -1,3 +1,5 @@
+---
+---
 # sc-sprites Version 1 Specification
 
 ## About this document
