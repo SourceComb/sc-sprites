@@ -85,4 +85,19 @@ function TestParseCoords:testValidStoresDefaultValues()
 end
 
 
+TestParseCanvas = {}
+
+function TestParseCanvas:testInvalidCanvas()
+  -- TODO: Write test
+end
+
+function TestParseCanvas:testInvalidCanvasSize()
+  -- TODO: Write test
+end
+
+function TestParseCanvas:testValidCanvas()
+  -- TODO: Write test
+end
+
+
 os.exit(luaunit.LuaUnit.run())
