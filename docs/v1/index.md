@@ -5,7 +5,7 @@
 ## About this document
 
 This document defines the sc-sprites file format. For general information,
-please [see the index page](..).
+please [see the index page](../..).
 
 
 ## Version Specifier
