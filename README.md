@@ -3,8 +3,8 @@
 ## General usage info
 
 You will need to create an adapter for whatever image loading library you want
-to use. It must be a function that takes the PNG data, and returns a table of
-functions:
+to use. It must be a function that takes the PNG data as a string, and returns
+a table with functions:
 
 - `:getWidth()` - gets the width of the PNG canvas
 - `:getHeight()` - gets the height of the PNG canvas

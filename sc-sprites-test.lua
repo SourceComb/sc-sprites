@@ -3,15 +3,34 @@ scspr = require 'sc-sprites'
 luaunit = require 'luaunit'
 
 
-function testBasicRead ()
-  local parser = scspr.Parser:new({})
-  local sheet = parser:newSheet(nil)
-  local f = io.open('README.md')
-  local data = f:read('*all')
-  f:close()
+function adapter (pngdat)
+  local _, _, w, h = pngdat:find('(%d+)x(%d+)')
+  local a = { _pngdat = {
+    data = pngdat,
+    width = tonumber(w),
+    height = tonumber(h)
+  } }
+  function a:getWidth ()
+    return self._pngdat.width
+  end
+  function a:getHeight ()
+    return self._pngdat.height
+  end
+  function a:getImage ()
+    return self._pngdat
+  end
+  return a
+end
 
-  sheet:setFile('README.md')
-  luaunit.assertEquals(sheet:readData(), data)
+
+parser = scspr.Parser:new(adapter)
+
+
+function testBasicRead ()
+  local sheet = parser:newSheet('test-files/test1.scspr')
+  luaunit.assertEquals(sheet.cellWidth, 16)
+  luaunit.assertEquals(sheet.coords['player.idle.left'].pos.y, 0)
+  luaunit.assertEquals(sheet.coords['player.idle.right'].pos.y, 16)
 end
 
 
