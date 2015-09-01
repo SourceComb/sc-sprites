@@ -3,6 +3,18 @@ scspr = require 'sc-sprites'
 luaunit = require 'luaunit'
 
 
+function testBasicRead ()
+  local parser = scspr.Parser:new({})
+  local sheet = parser:newSheet(nil)
+  local f = io.open('README.md')
+  local data = f:read('*all')
+  f:close()
+
+  sheet:setFile('README.md')
+  luaunit.assertEquals(sheet:readData(), data)
+end
+
+
 TestParseHeader = {}
 
 function TestParseHeader:testInvalidHeaderFormat()
