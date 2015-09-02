@@ -75,14 +75,14 @@ mySpriteCoords.scale
 -- If you're doing animations, there's those properties too:
 mySpriteCoords.ani.frames, mySpriteCoords.ani.rate
 
--- For animations, there is something far more useful.
-local frames = mySpriteCoords:frames()
--- This gives you an array with a Coords instance for each
--- frame.
-for _, frame in ipairs(frames) do
+-- For animations, there is something far more useful than
+-- just the properties. The :frames() function is a generator:
+for frame in mySpriteCoords:frames() do
   drawPartOfImage(frame.pos.x, frame.pos.y,
                   frame.size.width, frame.size.height)
 end
+-- If, for some reason, you need the frames as an array,
+-- the method :getFrames() converts it for you.
 
 -- Of course, you will need the actual image data. This
 -- will call your :getImage() adapter method.
