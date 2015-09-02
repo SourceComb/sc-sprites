@@ -1,4 +1,8 @@
 --[[
+sc-sprites for generic Lua.
+Homepage for this library: https://github.com/SourceComb/sc-sprites/tree/lua-generic
+Homepage for sc-sprites: http://www.sourcecomb.com/sc-sprites
+
 Copyright (c) 2015, Nelson Crosby <ncrosby@sourcecomb.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
