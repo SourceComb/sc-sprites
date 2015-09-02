@@ -3,6 +3,31 @@ local class = require 'middleclass'
 local scspr = {}
 
 
+local PATTERNS = {
+  HEADER = 'source comb spritesheet;(%d+);(.*);(%d+);\r?\n(.*)',
+  COORD_PAIR = '([%w.]+)%s*=%s*(.-)\r?\n(.*)',
+  COORD_VALUE = '(%d+),(%d+) (%d+)x(%d+) (%d+)( ?)(%d*)(@?)(%d*)'
+}
+
+local ERRORS = {
+  FORMAT = {
+    PREFIX = 'File does not start with the correct prefix (starts at ${start})',
+    CELLWIDTH = 'Cell width (${cw}) must be greater than 0',
+    COORD_VALUE = 'Coordinate value "${value}" for "${key}" is not in valid format',
+    CANVAS_WIDTH = 'Canvas width ${width} must be a multiple of cell width ${cw}',
+    CANVAS_HEIGHT = 'Canvas height ${height} must be a multiple of cell width ${cw}'
+  },
+  WRONG_VERSION = 'This library can only read strict Version 1 files (version ${ver}; extn "${extn}")'
+}
+
+local function __ (str, values)
+  local s = str:gsub('%${(%w+)}', function (name)
+    return tostring(values[name])
+  end)
+  return s
+end
+
+
 local Coords = class('Coords')
 scspr.Coords = Coords
 
@@ -50,10 +75,6 @@ end
 local Spritesheet = class('Spritesheet')
 scspr.Spritesheet = Spritesheet
 
-Spritesheet.HEADER_PATTERN = "source comb spritesheet;(%d+);(.*);(%d+);\r?\n(.*)"
-Spritesheet.COORD_PAIR = "([%w.]+)%s*=%s*(.-)\r?\n(.*)"
-Spritesheet.COORD_VALUE = "(%d+),(%d+) (%d+)x(%d+) (%d+)( ?)(%d*)(@?)(%d*)"
-
 function Spritesheet:initialize (parser, file)
   self.parser = parser
 
@@ -84,20 +105,22 @@ function Spritesheet:readData (data)
   end
 
   -- Parse header
-  local start, _, ver, extn, cellWidth, rest = data:find(Spritesheet.HEADER_PATTERN)
+  local start, _, ver, extn, cellWidth, rest = data:find(PATTERNS.HEADER)
   -- Ensure file has the correct prefix
   if start ~= 1 then
-    error("File does not start with the correct prefix (pos " .. start .. ")")
+    error(__(ERRORS.FORMAT.PREFIX, { start = start }))
   end
   -- We can only read non-extended version 1 files
   ver = tonumber(ver)
   if ver ~= 1 or extn ~= '' then
-    error("Can only read files strictly adhering to Version 1")
+    error(__(ERRORS.WRONG_VERSION, { ver = ver, extn = extn }))
   end
+  self.formatVersion = ver
+  self.formatExtn = extn
   -- Check that cellWidth is positive
   cellWidth = tonumber(cellWidth)
   if cellWidth <= 0 then
-    error("Cell width must be greater than 0")
+    error(__(ERRORS.FORMAT.CELLWIDTH, { cw = cellWidth }))
   else
     self.cellWidth = cellWidth
   end
@@ -105,14 +128,14 @@ function Spritesheet:readData (data)
   -- Parse coordinates
   self.coords = {}
   while true do   -- break when key == nil
-    local _, _, key, value, rest_ = rest:find(Spritesheet.COORD_PAIR)
+    local _, _, key, value, rest_ = rest:find(PATTERNS.COORD_PAIR)
     if key == nil then
       _, _, rest = rest:find('=\r?\n(.*)')
       break
     end -- Rest of loop only if key ~= nil
 
     -- Extract value
-    local _, _, y, x, w, h, s, ani_sp, ani_frames, ani_sep, ani_rate = value:find(Spritesheet.COORD_VALUE)
+    local _, _, y, x, w, h, s, ani_sp, ani_frames, ani_sep, ani_rate = value:find(PATTERNS.COORD_VALUE)
     y = tonumber(y)
     x = tonumber(x)
     w = tonumber(w)
@@ -123,7 +146,7 @@ function Spritesheet:readData (data)
       ani_frames = tonumber(ani_frames)
       ani_rate = tonumber(ani_rate)
       if ani_frames == nil or ani_rate == nil or not (ani_sp == ' ' and ani_frames > 0 and ani_sep == '@' and ani_rate >= 0) then
-        error('Value "' .. value .. '" is not in valid format.')
+        error(__(ERRORS.FORMAT.COORD_VALUE, { key = key, value = value }))
       end
     else
       ani_frames = 1
@@ -137,10 +160,10 @@ function Spritesheet:readData (data)
   -- Parse canvas
   self.canvas = self.parser.adapter(rest)
   if self.canvas:getWidth() % cellWidth ~= 0 then
-    error('Canvas width ' .. self.canvas:getWidth() .. ' is not a multiple of cell width ' .. cellWidth)
+    error(__(ERRORS.FORMAT.CANVAS_WIDTH, { width = self.canvas:getWidth(), cw = cellWidth }))
   end
   if self.canvas:getHeight() % cellWidth ~= 0 then
-    error('Canvas height ' .. self.canvas:getHeight() .. ' is not a multiple of cell width ' .. cellWidth)
+    error(__(ERRORS.FORMAT.CANVAS_HEIGHT, { height = self.canvas:getHeight(), cw = cellWidth }))
   end
 end
 

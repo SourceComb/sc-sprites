@@ -41,35 +41,62 @@ function TestParseHeader:testInvalidHeaderFormat()
 end
 
 function TestParseHeader:testInvalidFormatName()
-  -- TODO: Write test
+  luaunit.assertErrorMsgContains(
+    'File does not start with the correct prefix (starts at nil)',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-format-name-nonmatch.scspr'
+  )
+  luaunit.assertErrorMsgContains(
+    'File does not start with the correct prefix (starts at 3)',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-format-name-offset.scspr'
+  )
 end
 
 function TestParseHeader:testInvalidFormatVersion()
-  -- TODO: Write test
+  luaunit.assertErrorMsgContains(
+    'This library can only read strict Version 1 files (version 0; extn "")',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-format-version-0.scspr'
+  )
+  luaunit.assertErrorMsgContains(
+    'This library can only read strict Version 1 files (version 2; extn "")',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-format-version-2.scspr'
+  )
 end
 
 function TestParseHeader:testInvalidExtension()
-  -- TODO: Write test
+  luaunit.assertErrorMsgContains(
+    'This library can only read strict Version 1 files (version 1; extn "x-json")',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-extension-json.scspr'
+  )
+  luaunit.assertErrorMsgContains(
+    'This library can only read strict Version 1 files (version 1; extn "x-shaders")',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-extension-shaders.scspr'
+  )
 end
 
 function TestParseHeader:testInvalidCellWidth()
-  -- TODO: Write test
+  luaunit.assertErrorMsgContains(
+    'Cell width (0) must be greater than 0',
+    parser.newSheet, parser, 'test-files/test-parse-header/test-invalid-cell-width.scspr'
+  )
 end
 
 function TestParseHeader:testValidHeaderFormat()
-  -- TODO: Write test
+  parser:newSheet('test-files/test-parse-header/test-valid-header-format.scspr')
 end
 
 function TestParseHeader:testValidStoresFormatVersion()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-header/test-valid-header-format.scspr')
+  luaunit.assertEquals(sheet.formatVersion, 1)
 end
 
 function TestParseHeader:testValidStoresExtension()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-header/test-valid-header-format.scspr')
+  luaunit.assertEquals(sheet.formatExtn, '')
 end
 
 function TestParseHeader:testValidStoresCellWidth()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-header/test-valid-header-format.scspr')
+  luaunit.assertEquals(sheet.cellWidth, 16)
 end
 
 
