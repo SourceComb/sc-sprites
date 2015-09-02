@@ -29,14 +29,6 @@ end
 parser = scspr.Parser:new(adapter)
 
 
-function testBasicRead ()
-  local sheet = parser:newSheet('test-files/test1.scspr')
-  luaunit.assertEquals(sheet.cellWidth, 16)
-  luaunit.assertEquals(sheet.coords['player.idle.left'].pos.y, 0)
-  luaunit.assertEquals(sheet.coords['player.idle.right'].pos.y, 16)
-end
-
-
 TestParseHeader = {}
 
 function TestParseHeader:testInvalidHeaderFormat()
