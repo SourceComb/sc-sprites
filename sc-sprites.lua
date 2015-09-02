@@ -141,18 +141,6 @@ function Sprite:init (cellWidth, y, x, w, h, s, f, r)
   self.ani = { frames = f, rate = r }
 end
 
--- Get an array of Sprite objects each representing a single frame in the
--- animation.
--- Just turns the :frames() generator into an array
-function Sprite:getFrames ()
-  local frames = {}
-  for frame in self:frames() do
-    table.insert(frames, frame)
-  end
-  frames.rate = self.ani.rate
-  return frames
-end
-
 -- Generator to iterate over frame sprites
 function Sprite:frames ()
   -- x for final frame:
@@ -177,6 +165,18 @@ function Sprite:frames ()
     end
   end -- iterator
 end -- generator
+
+-- Get an array of Sprite objects each representing a single frame in the
+-- animation.
+-- Just turns the :frames() generator into an array
+function Sprite:getFrames ()
+  local frames = {}
+  for frame in self:frames() do
+    table.insert(frames, frame)
+  end
+  frames.rate = self.ani.rate
+  return frames
+end
 
 function Sprite:__tostring ()
   -- Concat all values in familiar format
