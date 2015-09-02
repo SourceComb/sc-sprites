@@ -125,11 +125,18 @@ function TestParseCoords:testValidStoresKeys()
 end
 
 function TestParseCoords:testValidStoresNestedKeys()
-  -- TODO: Write test (TODO: Implement setting nested keys)
+  local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-nested-keys.scspr')
+
+  luaunit.assertEquals(sheet.coords.player.idle.left.pos.x, 0)
+  luaunit.assertEquals(sheet.coords.player.idle.right.pos.x, 16)
 end
 
 function TestParseCoords:testValidStoresArrayKeys()
-  -- TODO: Write test (TODO: Implement array detection in nested keys)
+  local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-array-keys.scspr')
+
+  luaunit.assertEquals(#sheet.coords.player.idle, 2)
+  luaunit.assertEquals(sheet.coords.player.idle[1].pos.y, 0)
+  luaunit.assertEquals(sheet.coords.player.idle[2].pos.y, 16)
 end
 
 function TestParseCoords:testValidStoresValues()

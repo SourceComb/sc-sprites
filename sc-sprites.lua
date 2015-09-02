@@ -21,11 +21,89 @@ local ERRORS = {
   PARSE_CANVAS = 'Loading canvas failed: "${msg}"'
 }
 
+-- Basic string templating function
 local function __ (str, values)
   local s = str:gsub('%${(%w+)}', function (name)
     return tostring(values[name])
   end)
   return s
+end
+
+
+-- Get the value at a dot-separated key.
+-- Number-looking items in the key are translated to numbers (for arrays).
+local function deepget (o, fullkey)
+  for key in fullkey:gmatch('[^.]+') do
+    -- If the key is numeric, transform to number (for arrays and such)
+    if key:match('^%d+$') ~= nil then
+      key = tonumber(key)
+    end
+    -- If the item returns nil, terminate here
+    if o[key] == nil then
+      return nil
+    end
+    -- If it's a table, keep iterating down, otherwise terminate here
+    if type(o[key]) == 'table' then
+      o = o[key]
+    else
+      return o[key]
+    end
+  end
+  -- Reached the end and o is still a table; this appears to be what we wanted
+  return o
+end
+
+-- Set the value at a dot-separated key.
+-- Number-looking items in the key are translated to numbers (for arrays).
+-- Cannot add arbitrary length to arrays; can only increase length by one.
+-- The '+' key is considered an 'array append'.
+local function deepset (o, fullkey, value)
+  -- Some logic to set values extracted into a function.
+  -- Appending to an array is done with table.insert.
+  local function setv (o, k, v)
+    if type(k) == 'number' then
+      -- Existing array values can simply be overwritten
+      if k <= #o then o[k] = v
+      -- An append operation should probably use table.insert,
+      -- for future-proofing reasons.
+      elseif k == (#o + 1) then table.insert(o, v)
+      -- We'll simply fail for adding length beyond append
+      else error('Cannot add arbitrary length to arrays (index '..k..' len '..#o..')')
+      end
+    else
+      -- Not a number key; just set the value.
+      o[k] = v
+    end
+    -- The logic below will want this value to help it go deeper
+    return o[k]
+  end
+
+  -- Variables needed at the end
+  local lasto = o       -- The parent of o
+  local lastkey = nil   -- The previous key
+
+  -- Start going into the table
+  for key in fullkey:gmatch('[^.]+') do
+    -- Translate numeric keys into numbers
+    if key:match('^%d+$') ~= nil then key = tonumber(key) end
+    -- Set the actual key value for the 'append' operator
+    if key == '+' then key = #o + 1 end
+
+    if type(o[key]) == 'table' then
+      -- If the current o is a table, just go deeper
+      lasto = o
+      o = setv(o, key, o[key])
+    else
+      -- Current o is not a table, so make it one and go deeper
+      local v = o[key]
+      lasto = o
+      o = setv(o, key, { value = v })
+    end
+
+    lastkey = key
+  end
+  -- Finally, set the actual value.
+  lasto[lastkey] = value
 end
 
 
@@ -80,22 +158,17 @@ function Spritesheet:initialize (parser, file)
   if file == nil then
     self.file = nil
   else
-    assert(self:setFile(file))
+    self:setFile(file)
     self:readData()
   end
 end
 
 function Spritesheet:setFile (file)
   if type(file) == 'string' then
-    local errmsg, errno
-    file, errmsg, errno = io.open(file, 'r')
-    if file == nil then
-      return nil, errmsg, errno
-    end
+    file = assert(io.open(file, 'r'))
   end
 
   self.file = file
-  return file
 end
 
 function Spritesheet:readData (data)
@@ -152,7 +225,7 @@ function Spritesheet:readData (data)
       ani_rate = 0
     end
 
-    self.coords[key] = Coords:new(cellWidth, y, x, w, h, s, ani_frames, ani_rate)
+    deepset(self.coords, key, Coords:new(cellWidth, y, x, w, h, s, ani_frames, ani_rate))
     rest = rest_
   end
 

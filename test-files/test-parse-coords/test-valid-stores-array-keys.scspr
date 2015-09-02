@@ -1,0 +1,5 @@
+source comb spritesheet;1;;16;
+player.idle.1 = 0,0 1x1 1
+player.idle.2 = 1,0 1x1 1
+=
+16x16
