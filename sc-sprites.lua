@@ -204,25 +204,31 @@ function Spritesheet:init (parser, file)
   end
 end
 
+-- Sets the file to read from.
+-- Can take a string path or a file object.
 function Spritesheet:setFile (file)
   if type(file) == 'string' then
     file = assert(io.open(file, 'r'))
   end
-
   self.file = file
 end
 
+-- Read the spritesheet in from data.
+-- If data is unspecified, reads the
+-- entire file from self.file.
 function Spritesheet:readData (data)
   if data == nil then
     data = self.file:read('*all')
   end
   self.sheetData = data
 
+  -- Get all the information from the parser.
   self.formatVersion, self.formatExtn, self.cellWidth, data = self.parser:parseHeader(data)
   self.sprites, data = self.parser:parseCoords(data, self.cellWidth)
   self.canvasAdapter = self.parser:parseCanvas(data, self.cellWidth)
 end
 
+-- Gets the actual canvas image
 function Spritesheet:getCanvas ()
   return self.canvasAdapter:getImage()
 end
@@ -234,6 +240,7 @@ function Parser:init (adapter)
   self.adapter = adapter
 end
 
+-- Shortcut to create a new spritesheet.
 function Parser:newSheet (file)
   return new(Spritesheet, self, file)
 end
