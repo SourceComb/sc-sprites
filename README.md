@@ -3,10 +3,11 @@
 
 ## Installation
 
-You can simply copy `sc-sprites.lua` into your own project. Currently, you will
-need to provide a `middleclass.lua` compatible with middleclass v3.0.1, however
-we hope to soon abstract this away so you can plug in your own Class Commons
-implementation.
+You can simply copy `sc-sprites.lua` into your own project. You will need to
+provide a Class Commons implementation ([hump.class] is a pretty good one - we
+use it in our unit tests).
+
+[hump.class]: https://github.com/vrld/hump/blob/master/class.lua
 
 
 ## General usage info
@@ -24,6 +25,12 @@ a table with functions:
 Quick API intro:
 
 ```lua
+-- You'll need to make sure that common is available
+-- before requiring sc-sprites. You may need to write
+-- a small adapter to convert your OO library into
+-- Class Commons (if you are using hump.class, you
+-- only need to require it).
+require 'class'
 local scspr = require 'sc-sprites'
 
 -- You will need to begin by creating an adapter for your
@@ -40,7 +47,7 @@ local parser = scspr.Parser:new(adapter)
 -- from. You can also pass in a file object.
 local sheet = parser:newSheet('res/my-spritesheet.scspr')
 -- This method is a shortcut for:
-local sheet = scspr.Spritesheet:new(parser, 'res/my-spritesheet.scspr')
+local sheet = common.instance(scspr.Spritesheet, parser, 'res/my-spritesheet.scspr')
 -- If you want, you can give it the file path (or file
 -- object) later. Just remember to call all the methods.
 local sheet = parser:newSheet() -- or Spritesheet:new(parser)
@@ -85,3 +92,15 @@ local canvas = sheet:getCanvas()
 Please see [the main repo README](https://github.com/SourceComb/sc-sprites/blob/master/README.md)
 or [the site](http://sourcecomb.github.io/sc-sprites/) for more info on the
 sc-sprites format.
+
+
+## Running the tests
+
+You'll need everything in the repo - your best bet is to just clone it.
+
+    $ git clone -b lua-generic https://github.com/SourceComb/sc-sprites.git
+
+Make sure you are in the repo directory, then run the test file.
+
+    $ cd sc-sprites
+    $ lua sc-sprites-test.lua

@@ -1,3 +1,4 @@
+require 'class'
 scspr = require 'sc-sprites'
 
 luaunit = require 'luaunit'
@@ -26,7 +27,7 @@ function adapter (pngdat)
 end
 
 
-parser = scspr.Parser:new(adapter)
+parser = common.instance(scspr.Parser, adapter)
 
 
 TestParseHeader = {}
@@ -190,7 +191,7 @@ end
 TestCoords = {}
 
 function TestCoords:testGeneratesCorrectFrameset ()
-  local coords = scspr.Coords:new(16, 0, 0, 1, 1, 1, 4, 4)
+  local coords = common.instance(scspr.Coords, 16, 0, 0, 1, 1, 1, 4, 4)
   local frames = coords:frames()
 
   -- Check that consecutive frames line up correctly
@@ -219,7 +220,7 @@ function TestCoords:testGeneratesCorrectFrameset ()
   luaunit.assertEquals(frames[3].scale, 1)
   luaunit.assertEquals(frames[4].scale, 1)
 
-  coords = scspr.Coords:new(32, 3, 2, 2, 3, 2, 3, 3)
+  coords = common.instance(scspr.Coords, 32, 3, 2, 2, 3, 2, 3, 3)
   frames = coords:frames()
 
   -- Check that offsets and larger widths don't break things

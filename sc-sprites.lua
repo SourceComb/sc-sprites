@@ -18,9 +18,13 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ]]
 
-local class = require 'middleclass'
-
 local scspr = {}
+
+-- We use Class Commons
+assert(common and common.class and common.instance,
+       "Please provide a Class Commons implementation")
+local class = common.class
+local new = common.instance
 
 
 local PATTERNS = {
@@ -130,7 +134,7 @@ end
 local Coords = class('Coords')
 scspr.Coords = Coords
 
-function Coords:initialize (cellWidth, y, x, w, h, s, f, r)
+function Coords:init (cellWidth, y, x, w, h, s, f, r)
   -- Store info for coordinates to retrieve
   self._cw = cellWidth
   self.pos = { y = y * cellWidth, x = x * cellWidth }
@@ -150,7 +154,7 @@ function Coords:frames ()
   local lastFrameX = ((self.ani.frames - 1) * self.size.width) + self.pos.x
   -- frameY iterates over y values for each frame
   for frameX=self.pos.x, lastFrameX, self.size.width do
-    table.insert(frames, Coords:new(1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, 0))
+    table.insert(frames, new(Coords, 1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, 0))
   end
   frames.rate = self.ani.rate
   return frames
@@ -172,7 +176,7 @@ end
 local Spritesheet = class('Spritesheet')
 scspr.Spritesheet = Spritesheet
 
-function Spritesheet:initialize (parser, file)
+function Spritesheet:init (parser, file)
   self.parser = parser
 
   if file == nil then
@@ -245,7 +249,7 @@ function Spritesheet:readData (data)
       ani_rate = 0
     end
 
-    deepset(self.coords, key, Coords:new(cellWidth, y, x, w, h, s, ani_frames, ani_rate))
+    deepset(self.coords, key, new(Coords, cellWidth, y, x, w, h, s, ani_frames, ani_rate))
     rest = rest_
   end
 
@@ -272,12 +276,12 @@ end
 local Parser = class('Parser')
 scspr.Parser = Parser
 
-function Parser:initialize (adapter)
+function Parser:init (adapter)
   self.adapter = adapter
 end
 
 function Parser:newSheet (file)
-  return Spritesheet:new(self, file)
+  return new(Spritesheet, self, file)
 end
 
 return scspr
