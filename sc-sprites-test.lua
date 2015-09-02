@@ -4,6 +4,49 @@ scspr = require 'sc-sprites'
 luaunit = require 'luaunit'
 
 
+TestUtils = {}
+
+function TestUtils:testDeepGet ()
+  local deepget = scspr._utils.deepget
+
+  local o = {
+    a = { x = 1, y = 2, z = 3 },
+    b = { 'a', 'b', { c = 'foo', d = 'bar' } }
+  }
+  luaunit.assertEquals(deepget(o, 'a'), o.a)
+  luaunit.assertEquals(deepget(o, 'a.x'), o.a.x)
+  luaunit.assertEquals(deepget(o, 'b.1'), o.b[1])
+  luaunit.assertEquals(deepget(o, 'b.3.c'), o.b[3].c)
+end
+
+function TestUtils:testDeepSet ()
+  local deepset = scspr._utils.deepset
+
+  local o = {}
+  deepset(o, 'a', { x = 1 })
+  deepset(o, 'a.y', 2)
+  deepset(o, 'a.z.hello', 'world')
+  deepset(o, 'b', { 'x' })
+  deepset(o, 'b.2', 'y')
+  deepset(o, 'b.+', 'z')
+  deepset(o, 'c.1.foo', 'bar')
+  deepset(o, 'c.+.x', 42)
+
+  luaunit.assertEquals(o, {
+    a = { x = 1, y = 2, z = { hello = 'world' } },
+    b = { 'x', 'y', 'z' },
+    c = { { foo = 'bar' }, { x = 42 } }
+  })
+end
+
+function TestUtils:testStrTempl ()
+  local __ = scspr._utils.strtempl
+
+  luaunit.assertEquals(__('${foo}', { foo = 'bar' }), 'bar')
+  luaunit.assertEquals(__('Hello, ${name}!', { name = 'World' }), 'Hello, World!')
+end
+
+
 function adapter (pngdat)
   local start, _, w, h = pngdat:find('(%d+)x(%d+)')
   if start == nil then
@@ -191,7 +234,7 @@ end
 TestCoords = {}
 
 function TestCoords:testGeneratesCorrectFrameset ()
-  local coords = common.instance(scspr.Coords, 16, 0, 0, 1, 1, 1, 4, 4)
+  local coords = common.instance(scspr.Sprite, 16, 0, 0, 1, 1, 1, 4, 4)
   local frames = coords:frames()
 
   -- Check that consecutive frames line up correctly
@@ -220,7 +263,7 @@ function TestCoords:testGeneratesCorrectFrameset ()
   luaunit.assertEquals(frames[3].scale, 1)
   luaunit.assertEquals(frames[4].scale, 1)
 
-  coords = common.instance(scspr.Coords, 32, 3, 2, 2, 3, 2, 3, 3)
+  coords = common.instance(scspr.Sprite, 32, 3, 2, 2, 3, 2, 3, 3)
   frames = coords:frames()
 
   -- Check that offsets and larger widths don't break things

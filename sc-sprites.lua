@@ -18,21 +18,19 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ]]
 
-local scspr = {}
-
 -- We use Class Commons
 assert(common and common.class and common.instance,
        "Please provide a Class Commons implementation")
 local class = common.class
 local new = common.instance
 
-
+--[[ Constant strings ]]
 local PATTERNS = {
   HEADER = 'source comb spritesheet;(%d+);(.*);(%d+);\r?\n(.*)',
   COORD_PAIR = '([%w.]+)%s*=%s*(.-)\r?\n(.*)',
   COORD_VALUE = '(%d+),(%d+) (%d+)x(%d+) (%d+)( ?)(%d*)(@?)(%d*)'
 }
-
+-- Errors are in format to be used by __
 local ERRORS = {
   FORMAT = {
     PREFIX = 'File does not start with the correct prefix (starts at ${start})',
@@ -42,7 +40,8 @@ local ERRORS = {
     CANVAS_HEIGHT = 'Canvas height ${height} must be a multiple of cell width ${cw}'
   },
   WRONG_VERSION = 'This library can only read strict Version 1 files (version ${ver}; extn "${extn}")',
-  PARSE_CANVAS = 'Loading canvas failed: "${msg}"'
+  PARSE_CANVAS = 'Loading canvas failed: "${msg}"',
+  DEEPSET_ONLY_APPEND = 'Cannot add arbitrary length to arrays (index ${index}, len ${len})'
 }
 
 -- Basic string templating function
@@ -92,7 +91,7 @@ local function deepset (o, fullkey, value)
       -- for future-proofing reasons.
       elseif k == (#o + 1) then table.insert(o, v)
       -- We'll simply fail for adding length beyond append
-      else error('Cannot add arbitrary length to arrays (index '..k..' len '..#o..')')
+      else error(__(ERRORS.DEEPSET_ONLY_APPEND, { index = k, len = #o }))
       end
     else
       -- Not a number key; just set the value.
@@ -131,11 +130,10 @@ local function deepset (o, fullkey, value)
 end
 
 
-local Coords = class('Coords')
-scspr.Coords = Coords
+local Sprite = {}
 
-function Coords:init (cellWidth, y, x, w, h, s, f, r)
-  -- Store info for coordinates to retrieve
+function Sprite:init (cellWidth, y, x, w, h, s, f, r)
+  -- Store sprite info
   self._cw = cellWidth
   self.pos = { y = y * cellWidth, x = x * cellWidth }
   self.size = { width = w * cellWidth, height = h * cellWidth }
@@ -143,8 +141,8 @@ function Coords:init (cellWidth, y, x, w, h, s, f, r)
   self.ani = { frames = f, rate = r }
 end
 
-function Coords:frames ()
-  -- Get an array of Coords objects each representing a single frame in the
+function Sprite:frames ()
+  -- Get an array of Sprite objects each representing a single frame in the
   -- animation.
   local frames = {}
   -- x for last frame:
@@ -154,13 +152,13 @@ function Coords:frames ()
   local lastFrameX = ((self.ani.frames - 1) * self.size.width) + self.pos.x
   -- frameY iterates over y values for each frame
   for frameX=self.pos.x, lastFrameX, self.size.width do
-    table.insert(frames, new(Coords, 1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, 0))
+    table.insert(frames, new(Sprite, 1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, 0))
   end
   frames.rate = self.ani.rate
   return frames
 end
 
-function Coords:__tostring ()
+function Sprite:__tostring ()
   -- Concat all values in familiar format
   local y = self.pos.y
   local x = self.pos.x
@@ -173,8 +171,7 @@ function Coords:__tostring ()
 end
 
 
-local Spritesheet = class('Spritesheet')
-scspr.Spritesheet = Spritesheet
+local Spritesheet = {}
 
 function Spritesheet:init (parser, file)
   self.parser = parser
@@ -199,7 +196,29 @@ function Spritesheet:readData (data)
   if data == nil then
     data = self.file:read('*all')
   end
+  self.sheetData = data
 
+  self.formatVersion, self.formatExtn, self.cellWidth, data = self.parser:parseHeader(data)
+  self.coords, data = self.parser:parseCoords(data, self.cellWidth)
+  self.canvasAdapter = self.parser:parseCanvas(data, self.cellWidth)
+end
+
+function Spritesheet:getCanvas ()
+  return self.canvasAdapter:getImage()
+end
+
+
+local Parser = {}
+
+function Parser:init (adapter)
+  self.adapter = adapter
+end
+
+function Parser:newSheet (file)
+  return new(Spritesheet, self, file)
+end
+
+function Parser:parseHeader (data)
   -- Parse header
   local start, _, ver, extn, cellWidth, rest = data:find(PATTERNS.HEADER)
   -- Ensure file has the correct prefix
@@ -211,27 +230,30 @@ function Spritesheet:readData (data)
   if ver ~= 1 or extn ~= '' then
     error(__(ERRORS.WRONG_VERSION, { ver = ver, extn = extn }))
   end
-  self.formatVersion = ver
-  self.formatExtn = extn
+
   -- Check that cellWidth is positive
   cellWidth = tonumber(cellWidth)
   if cellWidth <= 0 then
     error(__(ERRORS.FORMAT.CELLWIDTH, { cw = cellWidth }))
-  else
-    self.cellWidth = cellWidth
   end
 
+  return ver, extn, cellWidth, rest
+end
+
+function Parser:parseCoords (data, cellWidth)
   -- Parse coordinates
-  self.coords = {}
-  while true do   -- break when key == nil
-    local _, _, key, value, rest_ = rest:find(PATTERNS.COORD_PAIR)
-    if key == nil then
-      _, _, rest = rest:find('=\r?\n(.*)')
+  local coords = {}
+  while true do   -- break when line is "="
+    local _, _, key, value, rest = data:find(PATTERNS.COORD_PAIR)
+    if key == nil and value == nil then
+      -- Terminate sequence ("=\n") found; stop
+      _, _, data = data:find('=\r?\n(.*)')
       break
-    end -- Rest of loop only if key ~= nil
+    end -- Rest of loop only if terminator not found
 
     -- Extract value
     local _, _, y, x, w, h, s, ani_sp, ani_frames, ani_sep, ani_rate = value:find(PATTERNS.COORD_VALUE)
+    -- Everything should be a number
     y = tonumber(y)
     x = tonumber(x)
     w = tonumber(w)
@@ -241,47 +263,60 @@ function Spritesheet:readData (data)
     if ani_given then
       ani_frames = tonumber(ani_frames)
       ani_rate = tonumber(ani_rate)
-      if ani_frames == nil or ani_rate == nil or not (ani_sp == ' ' and ani_frames > 0 and ani_sep == '@' and ani_rate >= 0) then
+      -- If the animation info is not in valid format, error.
+      if ani_frames == nil
+          or ani_rate == nil
+          or not (ani_sp == ' '
+                  and ani_frames > 0
+                  and ani_sep == '@'
+                  and ani_rate >= 0) then
         error(__(ERRORS.FORMAT.COORD_VALUE, { key = key, value = value }))
       end
     else
+      -- Default animation info
       ani_frames = 1
       ani_rate = 0
     end
 
-    deepset(self.coords, key, new(Coords, cellWidth, y, x, w, h, s, ani_frames, ani_rate))
-    rest = rest_
+    -- Create coords object and use deepset to make
+    -- accessing it similar to how the key is written
+    deepset(coords, key, new(Sprite, cellWidth, y, x, w, h, s, ani_frames, ani_rate))
+    data = rest
   end
 
+  return coords, data
+end
+
+function Parser:parseCanvas (data, cellWidth)
   -- Parse canvas
-  local status, result = pcall(function () return self.parser.adapter(rest) end)
-  if status then
-    self.canvas = result
-  else
+  local status, result = pcall(function () return self.adapter(data) end)
+  if not status then
     error(__(ERRORS.PARSE_CANVAS, { msg = result }))
   end
-  if self.canvas:getWidth() % cellWidth ~= 0 then
-    error(__(ERRORS.FORMAT.CANVAS_WIDTH, { width = self.canvas:getWidth(), cw = cellWidth }))
+  if result:getWidth() % cellWidth ~= 0 then
+    error(__(ERRORS.FORMAT.CANVAS_WIDTH, { width = result:getWidth(), cw = cellWidth }))
   end
-  if self.canvas:getHeight() % cellWidth ~= 0 then
-    error(__(ERRORS.FORMAT.CANVAS_HEIGHT, { height = self.canvas:getHeight(), cw = cellWidth }))
+  if result:getHeight() % cellWidth ~= 0 then
+    error(__(ERRORS.FORMAT.CANVAS_HEIGHT, { height = result:getHeight(), cw = cellWidth }))
   end
+
+  return result
 end
 
-function Spritesheet:getCanvas ()
-  return self.canvas:getImage()
-end
 
+-- Finalize classes
+Sprite = class('Sprite', Sprite)
+Spritesheet = class('Spritesheet', Spritesheet)
+Parser = class('Parser', Parser)
 
-local Parser = class('Parser')
-scspr.Parser = Parser
-
-function Parser:init (adapter)
-  self.adapter = adapter
-end
-
-function Parser:newSheet (file)
-  return new(Spritesheet, self, file)
-end
-
-return scspr
+-- Export module
+return {
+  Sprite = Sprite,
+  Spritesheet = Spritesheet,
+  Parser = Parser,
+  _utils = {
+    strtempl = __,
+    deepget = deepget,
+    deepset = deepset
+  }
+}
