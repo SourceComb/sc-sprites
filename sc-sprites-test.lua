@@ -4,7 +4,10 @@ luaunit = require 'luaunit'
 
 
 function adapter (pngdat)
-  local _, _, w, h = pngdat:find('(%d+)x(%d+)')
+  local start, _, w, h = pngdat:find('(%d+)x(%d+)')
+  if start == nil then
+    error('No width/height given')
+  end
   local a = { _pngdat = {
     data = pngdat,
     width = tonumber(w),
@@ -161,15 +164,27 @@ end
 TestParseCanvas = {}
 
 function TestParseCanvas:testInvalidCanvas()
-  -- TODO: Write test
+  luaunit.assertErrorMsgMatches(
+    '.- Loading canvas failed: ".- No width/height given"',
+    parser.newSheet, parser, 'test-files/test-parse-canvas/test-invalid-canvas.scspr'
+  )
 end
 
 function TestParseCanvas:testInvalidCanvasSize()
-  -- TODO: Write test
+  luaunit.assertErrorMsgContains(
+    'Canvas width 100 must be a multiple of cell width 16',
+    parser.newSheet, parser, 'test-files/test-parse-canvas/test-invalid-canvas-size-width.scspr'
+  )
+  luaunit.assertErrorMsgContains(
+    'Canvas height 10 must be a multiple of cell width 16',
+    parser.newSheet, parser, 'test-files/test-parse-canvas/test-invalid-canvas-size-height.scspr'
+  )
 end
 
 function TestParseCanvas:testValidCanvas()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-canvas/test-valid-canvas.scspr')
+
+  luaunit.assertEquals(sheet:getCanvas(), { data = '32x16\n', width = 32, height = 16 })
 end
 
 

@@ -17,7 +17,8 @@ local ERRORS = {
     CANVAS_WIDTH = 'Canvas width ${width} must be a multiple of cell width ${cw}',
     CANVAS_HEIGHT = 'Canvas height ${height} must be a multiple of cell width ${cw}'
   },
-  WRONG_VERSION = 'This library can only read strict Version 1 files (version ${ver}; extn "${extn}")'
+  WRONG_VERSION = 'This library can only read strict Version 1 files (version ${ver}; extn "${extn}")',
+  PARSE_CANVAS = 'Loading canvas failed: "${msg}"'
 }
 
 local function __ (str, values)
@@ -156,13 +157,22 @@ function Spritesheet:readData (data)
   end
 
   -- Parse canvas
-  self.canvas = self.parser.adapter(rest)
+  local status, result = pcall(function () return self.parser.adapter(rest) end)
+  if status then
+    self.canvas = result
+  else
+    error(__(ERRORS.PARSE_CANVAS, { msg = result }))
+  end
   if self.canvas:getWidth() % cellWidth ~= 0 then
     error(__(ERRORS.FORMAT.CANVAS_WIDTH, { width = self.canvas:getWidth(), cw = cellWidth }))
   end
   if self.canvas:getHeight() % cellWidth ~= 0 then
     error(__(ERRORS.FORMAT.CANVAS_HEIGHT, { height = self.canvas:getHeight(), cw = cellWidth }))
   end
+end
+
+function Spritesheet:getCanvas ()
+  return self.canvas:getImage()
 end
 
 
