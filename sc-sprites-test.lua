@@ -180,4 +180,58 @@ function TestParseCanvas:testValidCanvas()
 end
 
 
+TestCoords = {}
+
+function TestCoords:testGeneratesCorrectFrameset ()
+  local coords = scspr.Coords:new(16, 0, 0, 1, 1, 1, 4, 4)
+  local frames = coords:frames()
+
+  -- Check that consecutive frames line up correctly
+  luaunit.assertEquals(frames[1].pos.x, 16*0)
+  luaunit.assertEquals(frames[2].pos.x, 16*1)
+  luaunit.assertEquals(frames[3].pos.x, 16*2)
+  luaunit.assertEquals(frames[4].pos.x, 16*3)
+
+  -- Check that other values are consistent
+  luaunit.assertEquals(frames.rate, 4)
+  luaunit.assertEquals(#frames, 4)
+  luaunit.assertEquals(frames[1].pos.y, 0)
+  luaunit.assertEquals(frames[2].pos.y, 0)
+  luaunit.assertEquals(frames[3].pos.y, 0)
+  luaunit.assertEquals(frames[4].pos.y, 0)
+  luaunit.assertEquals(frames[1].size.width, 16)
+  luaunit.assertEquals(frames[2].size.width, 16)
+  luaunit.assertEquals(frames[3].size.width, 16)
+  luaunit.assertEquals(frames[4].size.width, 16)
+  luaunit.assertEquals(frames[1].size.height, 16)
+  luaunit.assertEquals(frames[2].size.height, 16)
+  luaunit.assertEquals(frames[3].size.height, 16)
+  luaunit.assertEquals(frames[4].size.height, 16)
+  luaunit.assertEquals(frames[1].scale, 1)
+  luaunit.assertEquals(frames[2].scale, 1)
+  luaunit.assertEquals(frames[3].scale, 1)
+  luaunit.assertEquals(frames[4].scale, 1)
+
+  coords = scspr.Coords:new(32, 3, 2, 2, 3, 2, 3, 3)
+  frames = coords:frames()
+
+  -- Check that offsets and larger widths don't break things
+  luaunit.assertEquals(frames[1].pos.x, (32*0*2)+(32*2))
+  luaunit.assertEquals(frames[2].pos.x, (32*1*2)+(32*2))
+  luaunit.assertEquals(frames[3].pos.x, (32*2*2)+(32*2))
+
+  -- Check that the previous tests weren't for
+  -- some reason passing on default values
+  luaunit.assertEquals(#frames, 3)
+  luaunit.assertEquals(frames[1].pos.y, 32*3)
+  luaunit.assertEquals(frames[3].pos.y, 32*3)
+  luaunit.assertEquals(frames[1].size.width, 32*2)
+  luaunit.assertEquals(frames[3].size.width, 32*2)
+  luaunit.assertEquals(frames[1].size.height, 32*3)
+  luaunit.assertEquals(frames[3].size.height, 32*3)
+  luaunit.assertEquals(frames[1].scale, 2)
+  luaunit.assertEquals(frames[3].scale, 2)
+end
+
+
 os.exit(luaunit.LuaUnit.run())

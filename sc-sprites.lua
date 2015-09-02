@@ -45,14 +45,14 @@ function Coords:frames ()
   -- Get an array of Coords objects each representing a single frame in the
   -- animation.
   local frames = {}
-  -- y for last frame:
+  -- x for last frame:
   -- - Get last frame index
   -- - Turn it into a pixel pos relative to first frame
   -- - Add first frame offset
-  local lastFrameY = ((self.ani.frames - 1) * self.size.width) + self.pos.y
+  local lastFrameX = ((self.ani.frames - 1) * self.size.width) + self.pos.x
   -- frameY iterates over y values for each frame
-  for frameY=self.pos.y, lastFrameY, self.size.width do
-    table.insert(frames, Coords:new(1, frameY, self.pos.x, self.size.width, self.size.height, self.scale, 1, 0))
+  for frameX=self.pos.x, lastFrameX, self.size.width do
+    table.insert(frames, Coords:new(1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, 0))
   end
   frames.rate = self.ani.rate
   return frames
