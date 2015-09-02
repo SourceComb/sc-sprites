@@ -141,22 +141,42 @@ function Sprite:init (cellWidth, y, x, w, h, s, f, r)
   self.ani = { frames = f, rate = r }
 end
 
-function Sprite:frames ()
-  -- Get an array of Sprite objects each representing a single frame in the
-  -- animation.
+-- Get an array of Sprite objects each representing a single frame in the
+-- animation.
+-- Just turns the :frames() generator into an array
+function Sprite:getFrames ()
   local frames = {}
-  -- x for last frame:
-  -- - Get last frame index
-  -- - Turn it into a pixel pos relative to first frame
-  -- - Add first frame offset
-  local lastFrameX = ((self.ani.frames - 1) * self.size.width) + self.pos.x
-  -- frameY iterates over y values for each frame
-  for frameX=self.pos.x, lastFrameX, self.size.width do
-    table.insert(frames, new(Sprite, 1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, 0))
+  for frame in self:frames() do
+    table.insert(frames, frame)
   end
   frames.rate = self.ani.rate
   return frames
 end
+
+-- Generator to iterate over frame sprites
+function Sprite:frames ()
+  -- x for final frame:
+  -- - Get final frame index
+  -- - Turn it into a pixel pos relative to first frame
+  -- - Add first frame offset
+  local finalFrameX = ((self.ani.frames - 1) * self.size.width) + self.pos.x
+  -- Current X coord
+  local frameX = self.pos.x
+
+  -- Actual iterator
+  return function ()
+    if frameX > finalFrameX then
+      -- No more frames; terminate
+      return nil
+    else
+      -- Create the next sprite
+      local next = new(Sprite, 1, self.pos.y, frameX, self.size.width, self.size.height, self.scale, 1, self.ani.rate)
+      -- Next frameX by adding width
+      frameX = frameX + self.size.width
+      return next
+    end
+  end -- iterator
+end -- generator
 
 function Sprite:__tostring ()
   -- Concat all values in familiar format

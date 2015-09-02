@@ -235,7 +235,7 @@ TestCoords = {}
 
 function TestCoords:testGeneratesCorrectFrameset ()
   local coords = common.instance(scspr.Sprite, 16, 0, 0, 1, 1, 1, 4, 4)
-  local frames = coords:frames()
+  local frames = coords:getFrames()
 
   -- Check that consecutive frames line up correctly
   luaunit.assertEquals(frames[1].pos.x, 16*0)
@@ -264,7 +264,7 @@ function TestCoords:testGeneratesCorrectFrameset ()
   luaunit.assertEquals(frames[4].scale, 1)
 
   coords = common.instance(scspr.Sprite, 32, 3, 2, 2, 3, 2, 3, 3)
-  frames = coords:frames()
+  frames = coords:getFrames()
 
   -- Check that offsets and larger widths don't break things
   luaunit.assertEquals(frames[1].pos.x, (32*0*2)+(32*2))
