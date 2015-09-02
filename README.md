@@ -63,21 +63,21 @@ sheet:readData(scSpriteFileData)
 -- (as is :setFile()) when you pass in the file via the
 -- constructor.
 
--- The most useful thing to you will be the .coords property.
+-- The most useful thing to you will be the .sprites property.
 -- You'll be able to access your information via this.
-local mySpriteCoords = sheet.coords.player.idle.left
+local mySpriteInfo = sheet.sprites.player.idle.left
 -- The top-left pixel coordinates:
-mySpriteCoords.pos.y, mySpriteCoords.pos.x
+mySpriteInfo.pos.y, mySpriteInfo.pos.x
 -- Size of the sprite in pixels:
-mySpriteCoords.size.width, mySpriteCoords.pos.height
+mySpriteInfo.size.width, mySpriteInfo.pos.height
 -- Note that you can really do what you want with the scale.
-mySpriteCoords.scale
+mySpriteInfo.scale
 -- If you're doing animations, there's those properties too:
-mySpriteCoords.ani.frames, mySpriteCoords.ani.rate
+mySpriteInfo.ani.frames, mySpriteInfo.ani.rate
 
 -- For animations, there is something far more useful than
 -- just the properties. The :frames() function is a generator:
-for frame in mySpriteCoords:frames() do
+for frame in mySpriteInfo:frames() do
   drawPartOfImage(frame.pos.x, frame.pos.y,
                   frame.size.width, frame.size.height)
 end

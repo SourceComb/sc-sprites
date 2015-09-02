@@ -219,7 +219,7 @@ function Spritesheet:readData (data)
   self.sheetData = data
 
   self.formatVersion, self.formatExtn, self.cellWidth, data = self.parser:parseHeader(data)
-  self.coords, data = self.parser:parseCoords(data, self.cellWidth)
+  self.sprites, data = self.parser:parseCoords(data, self.cellWidth)
   self.canvasAdapter = self.parser:parseCanvas(data, self.cellWidth)
 end
 

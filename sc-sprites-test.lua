@@ -164,43 +164,43 @@ end
 function TestParseCoords:testValidStoresKeys()
   local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-keys.scspr')
 
-  luaunit.assertNotNil(sheet.coords.standing)
-  luaunit.assertNotNil(sheet.coords.running)
+  luaunit.assertNotNil(sheet.sprites.standing)
+  luaunit.assertNotNil(sheet.sprites.running)
 end
 
 function TestParseCoords:testValidStoresNestedKeys()
   local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-nested-keys.scspr')
 
-  luaunit.assertEquals(sheet.coords.player.idle.left.pos.x, 0)
-  luaunit.assertEquals(sheet.coords.player.idle.right.pos.x, 16)
+  luaunit.assertEquals(sheet.sprites.player.idle.left.pos.x, 0)
+  luaunit.assertEquals(sheet.sprites.player.idle.right.pos.x, 16)
 end
 
 function TestParseCoords:testValidStoresArrayKeys()
   local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-array-keys.scspr')
 
-  luaunit.assertEquals(#sheet.coords.player.idle, 2)
-  luaunit.assertEquals(sheet.coords.player.idle[1].pos.y, 0)
-  luaunit.assertEquals(sheet.coords.player.idle[2].pos.y, 16)
+  luaunit.assertEquals(#sheet.sprites.player.idle, 2)
+  luaunit.assertEquals(sheet.sprites.player.idle[1].pos.y, 0)
+  luaunit.assertEquals(sheet.sprites.player.idle[2].pos.y, 16)
 end
 
 function TestParseCoords:testValidStoresValues()
   local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-values.scspr')
 
-  luaunit.assertEquals(sheet.coords.standing.pos, { y = 0, x = 0 })
-  luaunit.assertEquals(sheet.coords.standing.size, { width = 16, height = 16 })
-  luaunit.assertEquals(sheet.coords.standing.scale, 1)
-  luaunit.assertEquals(sheet.coords.standing.ani, { frames = 8, rate = 4 })
+  luaunit.assertEquals(sheet.sprites.standing.pos, { y = 0, x = 0 })
+  luaunit.assertEquals(sheet.sprites.standing.size, { width = 16, height = 16 })
+  luaunit.assertEquals(sheet.sprites.standing.scale, 1)
+  luaunit.assertEquals(sheet.sprites.standing.ani, { frames = 8, rate = 4 })
 
-  luaunit.assertEquals(sheet.coords.running.pos, { y = 16, x = 0 })
-  luaunit.assertEquals(sheet.coords.running.size, { width = 16, height = 16 })
-  luaunit.assertEquals(sheet.coords.running.scale, 1)
-  luaunit.assertEquals(sheet.coords.running.ani, { frames = 8, rate = 8 })
+  luaunit.assertEquals(sheet.sprites.running.pos, { y = 16, x = 0 })
+  luaunit.assertEquals(sheet.sprites.running.size, { width = 16, height = 16 })
+  luaunit.assertEquals(sheet.sprites.running.scale, 1)
+  luaunit.assertEquals(sheet.sprites.running.ani, { frames = 8, rate = 8 })
 end
 
 function TestParseCoords:testValidStoresDefaultValues()
   local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-default-values.scspr')
 
-  luaunit.assertEquals(sheet.coords.player.ani, { frames = 1, rate = 0 })
+  luaunit.assertEquals(sheet.sprites.player.ani, { frames = 1, rate = 0 })
 end
 
 
