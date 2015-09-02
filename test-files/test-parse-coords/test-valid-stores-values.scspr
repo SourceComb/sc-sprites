@@ -1,0 +1,5 @@
+source comb spritesheet;1;;16;
+standing = 0,0 1x1 1 8@4
+running  = 1,0 1x1 1 8@8
+=
+16x16

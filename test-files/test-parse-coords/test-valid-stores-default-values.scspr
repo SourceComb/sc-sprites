@@ -1,0 +1,4 @@
+source comb spritesheet;1;;16;
+player = 0,0 1x1 1
+=
+16x16

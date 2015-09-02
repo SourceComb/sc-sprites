@@ -103,43 +103,58 @@ end
 TestParseCoords = {}
 
 function TestParseCoords:testInvalidKVFormat()
-  -- TODO: Write test
+  -- TODO: Write test (might be redundant)
 end
 
 function TestParseCoords:testInvalidSectionTerminator()
-  -- TODO: Write test
+  -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
 end
 
 function TestParseCoords:testInvalidKeyFormat()
-  -- TODO: Write test
+  -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
 end
 
 function TestParseCoords:testInvalidValueFormat()
-  -- TODO: Write test
+  -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
 end
 
 function TestParseCoords:testValidCoordsFormat()
-  -- TODO: Write test
+  -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
 end
 
 function TestParseCoords:testValidStoresKeys()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-keys.scspr')
+
+  luaunit.assertNotNil(sheet.coords.standing)
+  luaunit.assertNotNil(sheet.coords.running)
 end
 
 function TestParseCoords:testValidStoresNestedKeys()
-  -- TODO: Write test
+  -- TODO: Write test (TODO: Implement setting nested keys)
 end
 
 function TestParseCoords:testValidStoresArrayKeys()
-  -- TODO: Write test
+  -- TODO: Write test (TODO: Implement array detection in nested keys)
 end
 
 function TestParseCoords:testValidStoresValues()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-values.scspr')
+
+  luaunit.assertEquals(sheet.coords.standing.pos, { y = 0, x = 0 })
+  luaunit.assertEquals(sheet.coords.standing.size, { width = 16, height = 16 })
+  luaunit.assertEquals(sheet.coords.standing.scale, 1)
+  luaunit.assertEquals(sheet.coords.standing.ani, { frames = 8, rate = 4 })
+
+  luaunit.assertEquals(sheet.coords.running.pos, { y = 16, x = 0 })
+  luaunit.assertEquals(sheet.coords.running.size, { width = 16, height = 16 })
+  luaunit.assertEquals(sheet.coords.running.scale, 1)
+  luaunit.assertEquals(sheet.coords.running.ani, { frames = 8, rate = 8 })
 end
 
 function TestParseCoords:testValidStoresDefaultValues()
-  -- TODO: Write test
+  local sheet = parser:newSheet('test-files/test-parse-coords/test-valid-stores-default-values.scspr')
+
+  luaunit.assertEquals(sheet.coords.player.ani, { frames = 1, rate = 0 })
 end
 
 

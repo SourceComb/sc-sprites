@@ -31,8 +31,6 @@ end
 local Coords = class('Coords')
 scspr.Coords = Coords
 
-local Coords = class('Coords')
-
 function Coords:initialize (cellWidth, y, x, w, h, s, f, r)
   -- Store info for coordinates to retrieve
   self._cw = cellWidth
