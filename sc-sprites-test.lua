@@ -75,10 +75,6 @@ parser = common.instance(scspr.Parser, adapter)
 
 TestParseHeader = {}
 
-function TestParseHeader:testInvalidHeaderFormat()
-  -- TODO: Write test
-end
-
 function TestParseHeader:testInvalidFormatName()
   luaunit.assertErrorMsgContains(
     'File does not start with the correct prefix (starts at nil)',
@@ -141,10 +137,6 @@ end
 
 TestParseCoords = {}
 
-function TestParseCoords:testInvalidKVFormat()
-  -- TODO: Write test (might be redundant)
-end
-
 function TestParseCoords:testInvalidSectionTerminator()
   -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
 end
@@ -154,11 +146,14 @@ function TestParseCoords:testInvalidKeyFormat()
 end
 
 function TestParseCoords:testInvalidValueFormat()
-  -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
-end
-
-function TestParseCoords:testValidCoordsFormat()
-  -- TODO: Write test (TODO: slightly more intelligent pattern error finding)
+  luaunit.assertErrorMsgContains(
+    'Coordinate value "a b c d" for "invalid" is not in valid format',
+    parser.newSheet, parser, 'test-files/test-parse-coords/test-invalid-value-format-1.scspr'
+  )
+  luaunit.assertErrorMsgContains(
+    'Coordinate value "1,1 1x1 1 @3" for "invalid" is not in valid format',
+    parser.newSheet, parser, 'test-files/test-parse-coords/test-invalid-value-format-2.scspr'
+  )
 end
 
 function TestParseCoords:testValidStoresKeys()

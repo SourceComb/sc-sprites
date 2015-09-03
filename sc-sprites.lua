@@ -279,8 +279,11 @@ function Parser:parseCoords (data, cellWidth)
     end -- Rest of loop only if terminator not found
 
     -- Extract value
-    local _, _, y, x, w, h, s, ani_sp, ani_frames, ani_sep, ani_rate = value:find(PATTERNS.COORD_VALUE)
+    local start, _, y, x, w, h, s, ani_sp, ani_frames, ani_sep, ani_rate = value:find(PATTERNS.COORD_VALUE)
     -- Everything should be a number
+    if start == nil then
+      error(__(ERRORS.FORMAT.COORD_VALUE, { key = key, value = value }))
+    end
     y = tonumber(y)
     x = tonumber(x)
     w = tonumber(w)
