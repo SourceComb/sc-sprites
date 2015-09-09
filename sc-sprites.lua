@@ -221,6 +221,7 @@ function Spritesheet:init (parser, file)
   else
     self:setFile(file)
     self:readData()
+    self:setupBatch()
   end
 end
 
@@ -244,8 +245,58 @@ function Spritesheet:readData (data)
 
   -- Get all the information from the parser.
   self.formatVersion, self.formatExtn, self.cellWidth, data = self.parser:parseHeader(data)
-  self.sprites, data = self.parser:parseCoords(data, self.cellWidth)
+  self._spriteKeys, self.sprites, data = self.parser:parseCoords(data, self.cellWidth)
   self.canvasAdapter = self.parser:parseCanvas(data, self.cellWidth)
+end
+
+-- Sets up the SpriteBatch.
+function Spritesheet:setupBatch ()
+  self._image = love.graphics.newImage(self:getCanvas())
+  self.batch = love.graphics.newSpriteBatch(self._image)
+
+  for _,key in pairs(self._spriteKeys) do
+    local sprite = deepget(self.sprites, key)
+    sprite._quads = {}
+    for frame in sprite:frames() do
+      local quad = love.graphics.newQuad(
+        frame.pos.x, frame.pos.y, frame.size.width, frame.size.height,
+        self.canvasAdapter:getWidth(), self.canvasAdapter:getHeight()
+      )
+      table.insert(sprite._quads, quad)
+    end
+  end
+
+  self._uses = {}
+end
+
+-- Create a new usage for a sprite
+function Spritesheet:useSprite (sprite, initX, initY, initR)
+  if initR == nil then initR = 0 end
+  local id = self.batch:add(sprite._quads[1], initX, initY, initR, sprite.scale)
+  self._uses[id] = { frame = 1, x = initX, y = initY, r = initR, sprite = sprite }
+  return id
+end
+
+-- Go to the next frame for the usage of a sprite
+function Spritesheet:usageNextFrame (id)
+  local usage = self._uses[id]
+  local frame = usage.frame + 1
+  local sprite = usage.sprite
+
+  usage.frame = frame
+  self.batch:set(id, sprite._quads[frame], usage.x, usage.y, usage.r, sprite.scale)
+end
+
+-- Change x/y/rotation for the usage of a sprite
+function Spritesheet:usageSetValues (id, newX, newY, newR)
+  local usage = self._uses[id]
+  local quad = usage.sprite._quads[usage.frame]
+  if newR == nil then newR = usage.r end
+
+  usage.x = newX
+  usage.y = newY
+  usage.r = newR
+  self.batch:set(id, quad, usage.x, usage.y, usage.r, usage.sprite.scale)
 end
 
 -- Gets the actual canvas image
@@ -289,6 +340,7 @@ end
 
 function Parser:parseCoords (data, cellWidth)
   -- Parse coordinates
+  local keys = {}
   local coords = {}
   while true do   -- break when line is "="
     local _, _, key, value, rest = data:find(PATTERNS.COORD_PAIR)
@@ -297,6 +349,8 @@ function Parser:parseCoords (data, cellWidth)
       _, _, data = data:find('=\r?\n(.*)')
       break
     end -- Rest of loop only if terminator not found
+
+    table.insert(keys, key)
 
     -- Extract value
     local start, _, y, x, w, h, s, ani_sp, ani_frames, ani_sep, ani_rate = value:find(PATTERNS.COORD_VALUE)
@@ -334,7 +388,7 @@ function Parser:parseCoords (data, cellWidth)
     data = rest
   end
 
-  return coords, data
+  return keys, coords, data
 end
 
 function Parser:parseCanvas (data, cellWidth)

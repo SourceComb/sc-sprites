@@ -15,25 +15,21 @@ local tests = {
 
     setup = function (self)
       self.sheet = parser:newSheet('test-files/test-visual/test-single-image.scspr')
-      self.image = love.graphics.newImage(self.sheet:getCanvas())
-      self.batch = love.graphics.newSpriteBatch(self.image)
       local sprite = self.sheet.sprites.placeholder
-      self.quad = love.graphics.newQuad(
-        sprite.pos.x, sprite.pos.y, sprite.size.width, sprite.size.height,
-        self.image:getWidth(), self.image:getHeight()
-      )
       self.x = 0
       self.y = 100
-      self.quadId = self.batch:add(self.quad, self.x, self.y)
+      self.usage = self.sheet:useSprite(sprite, self.x, self.y)
+
+      love.graphics.setBackgroundColor(64, 64, 64)
     end,
 
     update = function (self, dt)
       self.x = self.x + (100 * dt)
-      self.batch:set(self.quadId, self.quad, self.x, self.y)
+      self.sheet:usageSetValues(self.usage, self.x, self.y)
     end,
 
     draw = function (self)
-      love.graphics.draw(self.batch)
+      love.graphics.draw(self.sheet.batch)
     end
   }
 }
