@@ -307,8 +307,12 @@ end
 
 local Parser = {}
 
-function Parser:init ()
+function Parser:init (filterMode)
   self.adapter = adapter
+  if filterMode ~= nil then
+    print(filterMode)
+    love.graphics.setDefaultFilter(filterMode, filterMode)
+  end
 end
 
 -- Shortcut to create a new spritesheet.
