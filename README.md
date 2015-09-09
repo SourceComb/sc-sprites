@@ -4,6 +4,10 @@
 This is the Lua reference implementation, pre-configured to run on the LÖVE 2D
 engine.
 
+> **NOTE**: Right now, since we pull in from lua-generic every release, we will
+just rely on that for non-visual unit tests. If we work out a way to get
+luaunit to cooperate with LÖVE, then we'll make sure they start working again.
+
 
 ## Installation
 

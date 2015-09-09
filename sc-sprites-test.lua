@@ -282,5 +282,4 @@ function TestCoords:testGeneratesCorrectFrameset ()
 end
 
 
-local luaUnitStatus = luaunit.LuaUnit.run()
-os.exit(luaUnitStatus)
+os.exit(luaunit.LuaUnit.run())
