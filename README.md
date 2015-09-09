@@ -1,4 +1,8 @@
-# sc-sprites - Lua/Generic Reference Implementation
+# sc-sprites - Lua/LÖVE Reference Implementation
+
+
+This is the Lua reference implementation, pre-configured to run on the LÖVE 2D
+engine.
 
 
 ## Installation
@@ -11,15 +15,6 @@ use it in our unit tests).
 
 
 ## General usage info
-
-You will need to create an adapter for whatever image loading library you want
-to use. It must be a function that takes the PNG data as a string, and returns
-a table with functions:
-
-- `:getWidth()` - gets the width of the PNG canvas
-- `:getHeight()` - gets the height of the PNG canvas
-- `:getImage()` - gets the image as whatever is most useful to you (usually
-  just the image object a constructor returned)
 
 
 Quick API intro:

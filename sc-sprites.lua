@@ -1,6 +1,6 @@
 --[[
-sc-sprites for generic Lua.
-Homepage for this library: https://github.com/SourceComb/sc-sprites/tree/lua-generic
+sc-sprites for Lua and LÖVE 2D.
+Homepage for this library: https://github.com/SourceComb/sc-sprites/tree/lua-love2d
 Homepage for sc-sprites: http://www.sourcecomb.com/sc-sprites
 
 Copyright (c) 2015, Nelson Crosby <ncrosby@sourcecomb.com>
