@@ -273,18 +273,23 @@ end
 function Spritesheet:useSprite (sprite, initX, initY, initR)
   if initR == nil then initR = 0 end
   local id = self.batch:add(sprite._quads[1], initX, initY, initR, sprite.scale)
-  self._uses[id] = { frame = 1, x = initX, y = initY, r = initR, sprite = sprite }
+  self._uses[id] = { frame = 1, frameCounter = 0, frameLength = 1 / sprite.ani.rate, x = initX, y = initY, r = initR, sprite = sprite }
   return id
 end
 
 -- Go to the next frame for the usage of a sprite
-function Spritesheet:usageNextFrame (id)
+function Spritesheet:usageAnimate (id, dx)
   local usage = self._uses[id]
-  local frame = usage.frame + 1
   local sprite = usage.sprite
+  usage.frameCounter = usage.frameCounter + dx
+  if usage.frameCounter >= usage.frameLength then
+    local frame = usage.frame + 1
 
-  usage.frame = frame
-  self.batch:set(id, sprite._quads[frame], usage.x, usage.y, usage.r, sprite.scale)
+    usage.frameCounter = usage.frameCounter - usage.frameLength
+    if frame > #sprite._quads then frame = 1 end
+    usage.frame = frame
+    self.batch:set(id, sprite._quads[frame], usage.x, usage.y, usage.r, sprite.scale)
+  end
 end
 
 -- Change x/y/rotation for the usage of a sprite
@@ -310,7 +315,6 @@ local Parser = {}
 function Parser:init (filterMode)
   self.adapter = adapter
   if filterMode ~= nil then
-    print(filterMode)
     love.graphics.setDefaultFilter(filterMode, filterMode)
   end
 end

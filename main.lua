@@ -32,6 +32,7 @@ local tests = {
       love.graphics.draw(self.sheet.batch)
     end
   },
+
   {
     name = 'Draw scaled image',
 
@@ -46,6 +47,24 @@ local tests = {
     update = function (self, dt)
       self.x = self.x + (100 * dt)
       self.sheet:usageSetValues(self.usage, self.x, self.y)
+    end,
+
+    draw = function (self)
+      love.graphics.draw(self.sheet.batch)
+    end
+  },
+
+  {
+    name = 'Draw animated image',
+
+    setup = function (self)
+      self.sheet = parser:newSheet('test-files/test-visual/test-animated-image.scspr')
+      local sprite = self.sheet.sprites.placeholder
+      self.usage = self.sheet:useSprite(sprite, 100, 100)
+    end,
+
+    update = function (self, dt)
+      self.sheet:usageAnimate(self.usage, dt)
     end,
 
     draw = function (self)
