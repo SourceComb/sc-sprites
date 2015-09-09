@@ -18,6 +18,26 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ]]
 
+
+local function adapter (pngdat)
+  pngdat = love.filesystem.newFileData(pngdat, 'sprites.png')
+  local image = love.image.newImageData(pngdat)
+
+  local a = { _image = image }
+  function a:getImage ()
+    return self._image
+  end
+  function a:getWidth ()
+    return self._image:getWidth()
+  end
+  function a:getHeight ()
+    return self._image:getHeight()
+  end
+
+  return a
+end
+
+
 -- We use Class Commons
 assert(common and common.class and common.instance,
        "Please provide a Class Commons implementation")
@@ -236,7 +256,7 @@ end
 
 local Parser = {}
 
-function Parser:init (adapter)
+function Parser:init ()
   self.adapter = adapter
 end
 

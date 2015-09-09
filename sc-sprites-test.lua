@@ -47,6 +47,7 @@ function TestUtils:testStrTempl ()
 end
 
 
+--[[
 function adapter (pngdat)
   local start, _, w, h = pngdat:find('(%d+)x(%d+)')
   if start == nil then
@@ -68,9 +69,10 @@ function adapter (pngdat)
   end
   return a
 end
+]]
 
 
-parser = common.instance(scspr.Parser, adapter)
+parser = common.instance(scspr.Parser)
 
 
 TestParseHeader = {}
@@ -280,4 +282,5 @@ function TestCoords:testGeneratesCorrectFrameset ()
 end
 
 
-os.exit(luaunit.LuaUnit.run())
+local luaUnitStatus = luaunit.LuaUnit.run()
+os.exit(luaUnitStatus)
