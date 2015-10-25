@@ -20,6 +20,8 @@ a table with functions:
 - `:getHeight()` - gets the height of the PNG canvas
 - `:getImage()` - gets the image as whatever is most useful to you (usually
   just the image object a constructor returned)
+- `:getImageData()` - gets the raw PNG data to write to a file (only required
+  if you plan to use the `Unparser`)
 
 
 Quick API intro:

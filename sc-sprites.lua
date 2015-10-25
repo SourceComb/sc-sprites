@@ -30,6 +30,15 @@ local PATTERNS = {
   COORD_PAIR = '([%w.]+)%s*=%s*(.-)\r?\n(.*)',
   COORD_VALUE = '(%d+),(%d+) (%d+)x(%d+) (%d+)( ?)(%d*)(@?)(%d*)'
 }
+-- Templates to use for things
+local TMPL = {
+  GEN = {
+    HEADER = 'source comb spritesheet;${ver};;${cw};\n',
+    COORD_PAIR = '${key}=${cv}\n',
+    COORD_VALUE = '${y},${x} ${w}x${h} ${scale}${anim}',
+    COORD_ANIM = ' ${frames}@${rate}'
+  }
+}
 -- Errors are in format to be used by __
 local ERRORS = {
   FORMAT = {
@@ -228,6 +237,21 @@ function Spritesheet:readData (data)
   self.canvasAdapter = self.parser:parseCanvas(data, self.cellWidth)
 end
 
+function Spritesheet:addSprite (k, y, x, w, h, s, f, r)
+  if f == nil then
+    f = 1
+    r = 0
+  end
+
+  local sprite = new(Sprite, self.cellWidth, y, x, w, h, s, f, r)
+  deepset(self.sprites, k, sprite)
+  return sprite
+end
+
+function Spritesheet:getSprite (k)
+  return deepget(self.sprites, k)
+end
+
 -- Gets the actual canvas image
 function Spritesheet:getCanvas ()
   return self.canvasAdapter:getImage()
@@ -334,16 +358,56 @@ function Parser:parseCanvas (data, cellWidth)
 end
 
 
+local Unparser = {}
+
+function Unparser:init ()
+end
+
+function Unparser:generate (sheet)
+  return self:generateHeader(sheet) .. \
+    self:generateCoords(sheet) .. \
+    sheet.canvasAdapter:getImageData()
+end
+
+function Unparser:generateHeader (sheet)
+  return __(TMPL.GEN.HEADER, {
+    ver = 1,
+    cw = sheet.cellWidth
+  })
+end
+
+function Unparser:generateCoords (sheet)
+  local coords = ''
+  for k, v in deepiter(sheet.sprites) do
+    coords = coords .. __(TMPL.GEN.COORD_PAIR, {
+      key = k,
+      cv = __(TMPL.GEN.COORD_VALUE, {
+        y = v.pos.y, x = v.pos.x,
+        w = v.size.width, h = v.size.height,
+        scale = v.scale,
+        anim = __(TMPL.GEN.COORD_ANIM, {
+          frames = v.ani.frames, r = v.ani.rate
+        })
+      })
+    })
+  end
+
+  return coords .. '=\n'
+end
+
+
 -- Finalize classes
 Sprite = class('Sprite', Sprite)
 Spritesheet = class('Spritesheet', Spritesheet)
 Parser = class('Parser', Parser)
+Unparser = class('Unparser', Unparser)
 
 -- Export module
 return {
   Sprite = Sprite,
   Spritesheet = Spritesheet,
   Parser = Parser,
+  Unparser = Unparser,
   _utils = {
     strtempl = __,
     deepget = deepget,
