@@ -1,0 +1,23 @@
+{
+  "name": "sc-sprites",
+  "version": "0.0.0",
+  "description": "Reference JavaScript implementation of the sc-sprites format",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sc-sprites",
+    "file-format"
+  ],
+  "author": "Nelson Crosby <ncrosby@sourcecomb.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SourceComb/sc-sprites.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SourceComb/sc-sprites/issues"
+  },
+  "homepage": "https://github.com/SourceComb/sc-sprites#readme"
+}
